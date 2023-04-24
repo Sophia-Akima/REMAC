@@ -29,6 +29,7 @@ Partial Class FrmMain
         FbdWinrar = New FolderBrowserDialog()
         LstArchives = New ListBox()
         CmsLstArchives = New ContextMenuStrip(components)
+        AddFilesToolStripMenuItem = New ToolStripMenuItem()
         ClearToolStripMenuItem = New ToolStripMenuItem()
         ClearAllToolStripMenuItem = New ToolStripMenuItem()
         TxtAuthor = New TextBox()
@@ -37,6 +38,7 @@ Partial Class FrmMain
         RtbOutput = New RichTextBox()
         CmsRtbOutput = New ContextMenuStrip(components)
         ClearToolStripMenuItem1 = New ToolStripMenuItem()
+        OfdRars = New OpenFileDialog()
         CmsLstArchives.SuspendLayout()
         CmsRtbOutput.SuspendLayout()
         SuspendLayout()
@@ -90,9 +92,15 @@ Partial Class FrmMain
         ' 
         ' CmsLstArchives
         ' 
-        CmsLstArchives.Items.AddRange(New ToolStripItem() {ClearToolStripMenuItem, ClearAllToolStripMenuItem})
+        CmsLstArchives.Items.AddRange(New ToolStripItem() {AddFilesToolStripMenuItem, ClearToolStripMenuItem, ClearAllToolStripMenuItem})
         CmsLstArchives.Name = "CmsLstArchives"
-        CmsLstArchives.Size = New Size(149, 48)
+        CmsLstArchives.Size = New Size(149, 70)
+        ' 
+        ' AddFilesToolStripMenuItem
+        ' 
+        AddFilesToolStripMenuItem.Name = "AddFilesToolStripMenuItem"
+        AddFilesToolStripMenuItem.Size = New Size(148, 22)
+        AddFilesToolStripMenuItem.Text = "Add Files"
         ' 
         ' ClearToolStripMenuItem
         ' 
@@ -149,17 +157,22 @@ Partial Class FrmMain
         ' 
         CmsRtbOutput.Items.AddRange(New ToolStripItem() {ClearToolStripMenuItem1})
         CmsRtbOutput.Name = "CmsRtbOutput"
-        CmsRtbOutput.Size = New Size(181, 48)
+        CmsRtbOutput.Size = New Size(102, 26)
         ' 
         ' ClearToolStripMenuItem1
         ' 
         ClearToolStripMenuItem1.Name = "ClearToolStripMenuItem1"
-        ClearToolStripMenuItem1.Size = New Size(180, 22)
+        ClearToolStripMenuItem1.Size = New Size(101, 22)
         ClearToolStripMenuItem1.Text = "Clear"
+        ' 
+        ' OfdRars
+        ' 
+        OfdRars.Filter = "RAR Archive (*.rar)|*.rar"
+        OfdRars.Multiselect = True
         ' 
         ' FrmMain
         ' 
-        AutoScaleDimensions = New SizeF(7.0F, 15.0F)
+        AutoScaleDimensions = New SizeF(7F, 15F)
         AutoScaleMode = AutoScaleMode.Font
         ClientSize = New Size(325, 571)
         Controls.Add(RtbOutput)
@@ -193,4 +206,6 @@ Partial Class FrmMain
     Friend WithEvents RtbOutput As RichTextBox
     Friend WithEvents CmsRtbOutput As ContextMenuStrip
     Friend WithEvents ClearToolStripMenuItem1 As ToolStripMenuItem
+    Friend WithEvents AddFilesToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents OfdRars As OpenFileDialog
 End Class

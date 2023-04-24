@@ -1,6 +1,5 @@
 ﻿Imports System.Drawing.Text
 Imports System.IO
-Imports MadMilkman.Ini
 Public Class FrmMain
     Private ExePath As String = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
     Private WinrarPath As String
@@ -11,6 +10,9 @@ Public Class FrmMain
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         TxtWinrar.Text = My.Settings.WinrarPath
         TxtAuthor.Text = My.Settings.AuthorName
+        If (String.IsNullOrEmpty(TxtWinrar.Text)) Then
+            btnSetAuthorAll.Enabled = False
+        End If
     End Sub
 
     Private Sub BtnBrowseWinrar_Click(sender As Object, e As EventArgs) Handles BtnBrowseWinrar.Click
@@ -163,5 +165,17 @@ Public Class FrmMain
 
     Private Sub ClearToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles ClearToolStripMenuItem1.Click
         RtbOutput.Clear()
+    End Sub
+
+    Private Sub AddFilesToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles AddFilesToolStripMenuItem.Click
+        Try
+            If OfdRars.ShowDialog = DialogResult.OK Then
+                For Each s As String In OfdRars.FileNames
+                    LstArchives.Items.Add(s)
+                Next
+            End If
+        Catch ex As Exception
+            WriteLn(ex.Message)
+        End Try
     End Sub
 End Class
