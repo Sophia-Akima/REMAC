@@ -2,6 +2,7 @@
 Imports System.IO
 Imports System.Text.RegularExpressions
 Imports System.Threading.Tasks
+Imports System.IO.Compression
 Public Class FrmMain
     Private ExePath As String = Path.GetDirectoryName(Reflection.Assembly.GetExecutingAssembly().Location)
     Private WinrarPath As String
@@ -30,7 +31,7 @@ Public Class FrmMain
 
     Private Sub LstArchives_DragDrop(sender As Object, e As DragEventArgs) Handles LstArchives.DragDrop
         For Each f As String In e.Data.GetData(DataFormats.FileDrop)
-            If (Path.GetExtension(f) = ".rar") Then
+            If (Path.GetExtension(f) = ".rar" Or Path.GetExtension(f) = ".zip") Then
                 LstArchives.Items.Add(f)
             End If
         Next
@@ -67,141 +68,24 @@ Public Class FrmMain
         LstArchives.Enabled = False
         TxtWinrar.Enabled = False
 
-        WriteLn("Task UpdateModInfo start")
-        Dim result = Await UpdateModinfoRar()
-        WriteLn(Environment.NewLine & "Task UpdateModInfo finished")
+        Dim ChangeModAuthors As New ChangeModAuthors(RarPath)
+
+        For Each item In LstArchives.Items
+            Select Case Path.GetExtension(item)
+                Case ".rar"
+                    Dim result = Await ChangeModAuthors.Rar(item)
+                Case ".zip"
+                    Dim result = Await ChangeModAuthors.Zip(item)
+                Case Else
+                    MessageBox.Show("unknown extension type")
+            End Select
+        Next
 
         TxtWinrar.Enabled = True
         btnSetAuthorAll.Enabled = True
         BtnBrowseWinrar.Enabled = True
         BtnSettings.Enabled = True
         LstArchives.Enabled = True
-    End Sub
-    Private Function UpdateModinfoZip() As Task(Of Integer)
-
-        Return Task.FromResult(0)
-    End Function
-
-    Private Function UpdateModinfoRar() As Task(Of Integer)
-        For Each item In LstArchives.Items
-            Dim RarOutputFull As String
-            Dim RarFile As String = item.ToString
-            Dim RarProcess As New Process()
-            Dim RarProcInfo As New ProcessStartInfo(RarPath, String.Format("lb {0}{1}{0}", """", RarFile)) With {
-                .UseShellExecute = False,
-                .RedirectStandardOutput = True,
-                .CreateNoWindow = My.Settings.HidePopupWindow
-            }
-
-            RarProcess.StartInfo = RarProcInfo
-            RarProcess.Start()
-
-            Dim RarOutput As String
-            Using sr As StreamReader = RarProcess.StandardOutput
-                RarOutput = sr.ReadToEnd
-            End Using
-
-            If My.Settings.ShowConsoleOutput Then RtbOutput.Invoke(Sub()
-                                                                       RarOutputFull = Regex.Replace(RarOutput, "[^\P{C}\n]+", String.Empty)
-                                                                       RarOutputFull = Regex.Replace(RarOutputFull, "^[\s\t]*\r?\n", String.Empty, RegexOptions.Multiline).Trim
-                                                                       WriteLn(Environment.NewLine & "----------rar.exe " & RarProcInfo.Arguments, False)
-                                                                       WriteLn(RarOutputFull, False)
-                                                                       WriteLn("----------end rar.exe----------" & Environment.NewLine, False)
-                                                                   End Sub)
-
-            Dim RarOutputLines As String() = RarOutput.Split(Environment.NewLine)
-
-            For Each line As String In RarOutputLines
-                If line.ToLower.Contains("modinfo.ini") Then
-
-                    RtbOutput.Invoke(Sub()
-                                         WriteLn(String.Format("{2}---------- Starting file {0}{1}{0} ----------", """", line, Environment.NewLine), False)
-                                         WriteLn(String.Format("Extracting: {0}{1}{0}", """", line))
-                                     End Sub)
-
-
-                    ' line in this scenario doubles as both the file we are extracting and it's
-                    ' corresponding filename on disk when extracted
-                    RarProcInfo.Arguments = String.Format("x -o+ {0}{1}{0} {0}{2}{0} {0}{3}{0}", """", RarFile, line, ExePath)
-                    RarProcess.Start()
-                    RarProcess.WaitForExit()
-
-                    Using sr As StreamReader = RarProcess.StandardOutput
-                        RarOutput = sr.ReadToEnd
-                    End Using
-                    If RarOutput.Contains("OK") Or RarOutput.Contains("Done") Or RarOutput.Contains("100%") Then
-                        RtbOutput.Invoke(Sub()
-                                             If My.Settings.ShowConsoleOutput Then
-                                                 RarOutputFull = Regex.Replace(RarOutput, "[^\P{C}\n]+", String.Empty)
-                                                 RarOutputFull = Regex.Replace(RarOutputFull, "^[\s\t]*\r?\n", String.Empty, RegexOptions.Multiline).Trim
-                                                 WriteLn(Environment.NewLine & "----------rar.exe " & RarProcInfo.Arguments, False)
-                                                 WriteLn(RarOutputFull, False)
-                                                 WriteLn("----------end rar.exe----------" & Environment.NewLine, False)
-                                             End If
-                                             WriteLn("Extraction returned OK")
-                                         End Sub)
-                    Else
-                        MessageBox.Show(RarOutput, "remac")
-                    End If
-
-                    RtbOutput.Invoke(Sub()
-                                         WriteLn(String.Format("Updating author for: {0}{1}{0}", """", line))
-                                     End Sub)
-
-                    Dim Ini As New IniFileParser(line)
-                    Ini.SetValue("author", TxtAuthor.Text)
-
-
-                    RarProcInfo.Arguments = String.Format("m -r {0}{1}{0} {0}{2}{0}", """", RarFile, line)
-                    RtbOutput.Invoke(Sub()
-                                         WriteLn(String.Format("Adding updated {0}{1}{0} to archive", """", line))
-                                     End Sub)
-                    RarProcess.Start()
-                    RarProcess.WaitForExit()
-
-                    Using sr As StreamReader = RarProcess.StandardOutput
-                        RarOutput = sr.ReadToEnd
-                    End Using
-
-                    If RarOutput.Contains("OK") Or RarOutput.Contains("Done") Or RarOutput.Contains("100%") Then
-                        RtbOutput.Invoke(Sub()
-                                             If My.Settings.ShowConsoleOutput Then
-                                                 RarOutputFull = Regex.Replace(RarOutput, "[^\P{C}\n]+", String.Empty)
-                                                 RarOutputFull = Regex.Replace(RarOutputFull, "^[\s\t]*\r?\n", String.Empty, RegexOptions.Multiline).Trim
-                                                 WriteLn(Environment.NewLine & "----------rar.exe " & RarProcInfo.Arguments, False)
-                                                 WriteLn(RarOutputFull, False)
-                                                 WriteLn("----------end rar.exe----------" & Environment.NewLine, False)
-                                             End If
-                                             WriteLn(String.Format("Adding {0}{1}{0} returned OK", """", line))
-                                             WriteLn(String.Format("---------- Finished file {0}{1}{0} ----------", """", line), False)
-                                         End Sub)
-                    Else
-                        MessageBox.Show(RarOutput, "remac")
-                    End If
-
-                    If (Not String.IsNullOrWhiteSpace(Path.GetDirectoryName(line))) Then
-                        Try
-                            Directory.Delete(Path.GetDirectoryName(line))
-                        Catch ex As Exception
-                            RtbOutput.Invoke(Sub()
-                                                 WriteLn("-----------------------")
-                                                 WriteLn("ERROR: " & ex.Message)
-                                                 WriteLn("-----------------------")
-                                             End Sub)
-                        End Try
-                    End If
-                End If
-            Next
-        Next
-        Return Task.FromResult(0)
-    End Function
-
-    Private Sub WriteLn(ByVal text As String, Optional ByVal remac As Boolean = True)
-        If remac Then
-            RtbOutput.AppendText(DateTime.Now.ToString("HH:mm:ss") & " remac: " & text & Environment.NewLine)
-        Else
-            RtbOutput.AppendText(text & Environment.NewLine)
-        End If
     End Sub
 
     Private Sub TxtAuthor_TextChanged(sender As Object, e As EventArgs) Handles TxtAuthor.TextChanged
@@ -214,7 +98,7 @@ Public Class FrmMain
         RarPath = WinrarPath & "\rar.exe"
         If (Not File.Exists(RarPath)) Then
             btnSetAuthorAll.Enabled = False
-            WriteLn("ERROR: Rar.exe not found at " & RarPath)
+            ChangeModAuthors.Log("ERROR: Rar.exe not found at " & RarPath)
         Else
             btnSetAuthorAll.Enabled = True
         End If
@@ -232,7 +116,7 @@ Public Class FrmMain
                 Next
             End If
         Catch ex As Exception
-            WriteLn(ex.Message)
+            ChangeModAuthors.Log(ex.Message)
         End Try
     End Sub
 
