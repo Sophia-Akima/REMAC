@@ -1,6 +1,6 @@
 # REMAC - Resident Evil Mod Author Changer
 
-### Currently ONLY works with Rar archives
+### Now supports zip files
 
 Does what it says, should work but I'm not a programmer.
 Made with .net 6.0 so you may need the runtime. 
