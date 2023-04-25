@@ -23,6 +23,7 @@ Partial Class FrmMain
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         components = New ComponentModel.Container()
+        Dim resources As ComponentModel.ComponentResourceManager = New ComponentModel.ComponentResourceManager(GetType(FrmMain))
         TxtWinrar = New TextBox()
         Label1 = New Label()
         BtnBrowseWinrar = New Button()
@@ -39,6 +40,7 @@ Partial Class FrmMain
         CmsRtbOutput = New ContextMenuStrip(components)
         ClearToolStripMenuItem1 = New ToolStripMenuItem()
         OfdRars = New OpenFileDialog()
+        BtnSettings = New Button()
         CmsLstArchives.SuspendLayout()
         CmsRtbOutput.SuspendLayout()
         SuspendLayout()
@@ -48,8 +50,8 @@ Partial Class FrmMain
         TxtWinrar.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
         TxtWinrar.Location = New Point(12, 27)
         TxtWinrar.Name = "TxtWinrar"
-        TxtWinrar.Size = New Size(265, 23)
-        TxtWinrar.TabIndex = 0
+        TxtWinrar.Size = New Size(420, 23)
+        TxtWinrar.TabIndex = 4
         ' 
         ' Label1
         ' 
@@ -63,7 +65,7 @@ Partial Class FrmMain
         ' BtnBrowseWinrar
         ' 
         BtnBrowseWinrar.Anchor = AnchorStyles.Top Or AnchorStyles.Right
-        BtnBrowseWinrar.Location = New Point(283, 27)
+        BtnBrowseWinrar.Location = New Point(438, 27)
         BtnBrowseWinrar.Name = "BtnBrowseWinrar"
         BtnBrowseWinrar.Size = New Size(30, 23)
         BtnBrowseWinrar.TabIndex = 2
@@ -87,7 +89,7 @@ Partial Class FrmMain
         LstArchives.Location = New Point(12, 56)
         LstArchives.Name = "LstArchives"
         LstArchives.SelectionMode = SelectionMode.MultiExtended
-        LstArchives.Size = New Size(301, 229)
+        LstArchives.Size = New Size(485, 229)
         LstArchives.TabIndex = 3
         ' 
         ' CmsLstArchives
@@ -119,8 +121,8 @@ Partial Class FrmMain
         TxtAuthor.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         TxtAuthor.Location = New Point(12, 306)
         TxtAuthor.Name = "TxtAuthor"
-        TxtAuthor.Size = New Size(220, 23)
-        TxtAuthor.TabIndex = 4
+        TxtAuthor.Size = New Size(404, 23)
+        TxtAuthor.TabIndex = 0
         ' 
         ' Label2
         ' 
@@ -135,7 +137,7 @@ Partial Class FrmMain
         ' btnSetAuthorAll
         ' 
         btnSetAuthorAll.Anchor = AnchorStyles.Bottom Or AnchorStyles.Right
-        btnSetAuthorAll.Location = New Point(238, 306)
+        btnSetAuthorAll.Location = New Point(422, 306)
         btnSetAuthorAll.Name = "btnSetAuthorAll"
         btnSetAuthorAll.Size = New Size(75, 23)
         btnSetAuthorAll.TabIndex = 6
@@ -149,7 +151,7 @@ Partial Class FrmMain
         RtbOutput.Location = New Point(12, 335)
         RtbOutput.Name = "RtbOutput"
         RtbOutput.ReadOnly = True
-        RtbOutput.Size = New Size(301, 224)
+        RtbOutput.Size = New Size(485, 224)
         RtbOutput.TabIndex = 7
         RtbOutput.Text = ""
         ' 
@@ -170,11 +172,22 @@ Partial Class FrmMain
         OfdRars.Filter = "RAR Archive (*.rar)|*.rar"
         OfdRars.Multiselect = True
         ' 
+        ' BtnSettings
+        ' 
+        BtnSettings.Anchor = AnchorStyles.Top Or AnchorStyles.Right
+        BtnSettings.Image = CType(resources.GetObject("BtnSettings.Image"), Image)
+        BtnSettings.Location = New Point(474, 27)
+        BtnSettings.Name = "BtnSettings"
+        BtnSettings.Size = New Size(23, 23)
+        BtnSettings.TabIndex = 8
+        BtnSettings.UseVisualStyleBackColor = True
+        ' 
         ' FrmMain
         ' 
-        AutoScaleDimensions = New SizeF(7F, 15F)
+        AutoScaleDimensions = New SizeF(7.0F, 15.0F)
         AutoScaleMode = AutoScaleMode.Font
-        ClientSize = New Size(325, 571)
+        ClientSize = New Size(509, 571)
+        Controls.Add(BtnSettings)
         Controls.Add(RtbOutput)
         Controls.Add(btnSetAuthorAll)
         Controls.Add(Label2)
@@ -208,4 +221,5 @@ Partial Class FrmMain
     Friend WithEvents ClearToolStripMenuItem1 As ToolStripMenuItem
     Friend WithEvents AddFilesToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents OfdRars As OpenFileDialog
+    Friend WithEvents BtnSettings As Button
 End Class

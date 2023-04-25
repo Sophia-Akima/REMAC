@@ -77,6 +77,30 @@ Namespace My
                 Me("AuthorName") = value
             End Set
         End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("True")>  _
+        Public Property HidePopupWindow() As Boolean
+            Get
+                Return CType(Me("HidePopupWindow"),Boolean)
+            End Get
+            Set
+                Me("HidePopupWindow") = value
+            End Set
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("False")>  _
+        Public Property ShowConsoleOutput() As Boolean
+            Get
+                Return CType(Me("ShowConsoleOutput"),Boolean)
+            End Get
+            Set
+                Me("ShowConsoleOutput") = value
+            End Set
+        End Property
     End Class
 End Namespace
 
