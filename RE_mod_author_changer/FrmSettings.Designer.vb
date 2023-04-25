@@ -27,6 +27,9 @@ Partial Class FrmSettings
         BtnSave = New Button()
         BtnCloseWithoutSave = New Button()
         CbShowConsoleOutput = New CheckBox()
+        NumRarTimeout = New NumericUpDown()
+        Label1 = New Label()
+        CType(NumRarTimeout, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
         ' 
         ' CbHidePopupWindow
@@ -44,7 +47,7 @@ Partial Class FrmSettings
         BtnSaveAndClose.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         BtnSaveAndClose.Location = New Point(12, 181)
         BtnSaveAndClose.Name = "BtnSaveAndClose"
-        BtnSaveAndClose.Size = New Size(197, 23)
+        BtnSaveAndClose.Size = New Size(251, 23)
         BtnSaveAndClose.TabIndex = 1
         BtnSaveAndClose.Text = "Save and close"
         BtnSaveAndClose.UseVisualStyleBackColor = True
@@ -54,7 +57,7 @@ Partial Class FrmSettings
         BtnSave.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         BtnSave.Location = New Point(12, 152)
         BtnSave.Name = "BtnSave"
-        BtnSave.Size = New Size(197, 23)
+        BtnSave.Size = New Size(251, 23)
         BtnSave.TabIndex = 2
         BtnSave.Text = "Save"
         BtnSave.UseVisualStyleBackColor = True
@@ -64,7 +67,7 @@ Partial Class FrmSettings
         BtnCloseWithoutSave.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         BtnCloseWithoutSave.Location = New Point(12, 210)
         BtnCloseWithoutSave.Name = "BtnCloseWithoutSave"
-        BtnCloseWithoutSave.Size = New Size(197, 23)
+        BtnCloseWithoutSave.Size = New Size(251, 23)
         BtnCloseWithoutSave.TabIndex = 3
         BtnCloseWithoutSave.Text = "Close without saving"
         BtnCloseWithoutSave.UseVisualStyleBackColor = True
@@ -79,21 +82,44 @@ Partial Class FrmSettings
         CbShowConsoleOutput.Text = "Show all console output"
         CbShowConsoleOutput.UseVisualStyleBackColor = True
         ' 
+        ' NumRarTimeout
+        ' 
+        NumRarTimeout.Increment = New [Decimal](New Integer() {100, 0, 0, 0})
+        NumRarTimeout.Location = New Point(187, 62)
+        NumRarTimeout.Maximum = New [Decimal](New Integer() {999999999, 0, 0, 0})
+        NumRarTimeout.Minimum = New [Decimal](New Integer() {1000, 0, 0, 0})
+        NumRarTimeout.Name = "NumRarTimeout"
+        NumRarTimeout.Size = New Size(76, 23)
+        NumRarTimeout.TabIndex = 5
+        NumRarTimeout.Value = New [Decimal](New Integer() {10000, 0, 0, 0})
+        ' 
+        ' Label1
+        ' 
+        Label1.AutoSize = True
+        Label1.Location = New Point(12, 64)
+        Label1.Name = "Label1"
+        Label1.Size = New Size(169, 15)
+        Label1.TabIndex = 6
+        Label1.Text = "rar.exe timeout in milliseconds"
+        ' 
         ' FrmSettings
         ' 
         AutoScaleDimensions = New SizeF(7F, 15F)
         AutoScaleMode = AutoScaleMode.Font
-        ClientSize = New Size(221, 238)
+        ClientSize = New Size(275, 238)
+        Controls.Add(Label1)
+        Controls.Add(NumRarTimeout)
         Controls.Add(CbShowConsoleOutput)
         Controls.Add(BtnCloseWithoutSave)
         Controls.Add(BtnSave)
         Controls.Add(BtnSaveAndClose)
         Controls.Add(CbHidePopupWindow)
-        FormBorderStyle = FormBorderStyle.FixedToolWindow
+        FormBorderStyle = FormBorderStyle.SizableToolWindow
         MaximizeBox = False
         Name = "FrmSettings"
         StartPosition = FormStartPosition.CenterParent
         Text = "REMAC Settings"
+        CType(NumRarTimeout, ComponentModel.ISupportInitialize).EndInit()
         ResumeLayout(False)
         PerformLayout()
     End Sub
@@ -103,4 +129,6 @@ Partial Class FrmSettings
     Friend WithEvents BtnSave As Button
     Friend WithEvents BtnCloseWithoutSave As Button
     Friend WithEvents CbShowConsoleOutput As CheckBox
+    Friend WithEvents NumRarTimeout As NumericUpDown
+    Friend WithEvents Label1 As Label
 End Class

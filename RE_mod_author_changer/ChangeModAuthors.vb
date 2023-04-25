@@ -27,12 +27,12 @@ Public Class ChangeModAuthors
                     ZipEntry.ExtractToFile(OutPath, True)
                     ExtractedFiles.Add(ZipEntry.FullName)
 
-                    Log(String.Format("Extract {0}{1}{0} complete", """", ZipEntry.FullName))
+                    Log(String.Format("Extraction complete: {0}{1}{0}", """", ZipEntry.FullName))
 
                     Dim Ini As New IniFileParser(OutPath)
                     Ini.SetValue("author", FrmMain.TxtAuthor.Text)
 
-                    Log(String.Format("Changing mod author for {0}{1}{0} complete", """", ZipEntry.FullName))
+                    Log(String.Format("Changed author for: {0}{1}{0}", """", ZipEntry.FullName))
 
                 End If
             Next
@@ -40,10 +40,10 @@ Public Class ChangeModAuthors
             For Each File In ExtractedFiles
                 Dim ArchiveEntry As ZipArchiveEntry = Archive.GetEntry(File)
                 ArchiveEntry.Delete()
-                Log(String.Format("Deleted {0}{1}{0} from archive", """", File))
+                Log(String.Format("Deleted from archive: {0}{1}{0}", """", File))
                 Archive.CreateEntryFromFile(File, File)
                 IO.File.Delete(File)
-                Log(String.Format("Moved {0}{1}{0} to archive", """", File))
+                Log(String.Format("Moved to archive: {0}{1}{0}", """", File))
 
                 If Not String.IsNullOrWhiteSpace(Path.GetDirectoryName(File)) Then
                     Dim DirToDelete = Path.GetDirectoryName(File).Split("\")(0)
@@ -54,8 +54,6 @@ Public Class ChangeModAuthors
                         MessageBox.Show(ex.Message)
                     End Try
                 End If
-
-                Log(String.Format("Deleted directory {0}{1}{0}", """", Path.GetDirectoryName(File).Split("\")(0)))
             Next
         End Using
 
@@ -71,11 +69,14 @@ Public Class ChangeModAuthors
             .UseShellExecute = False,                                   ' This initial argument is simply to LOOK
             .RedirectStandardOutput = True,                             ' at the files BASIC information (just the location)
             .CreateNoWindow = My.Settings.HidePopupWindow}
-
         'This will return the filenames
         RarOutput = StartRarProcessAndReturnOutput(RarArchive, RarProcessInfo)
         RarOutputShort = FormatRarOutput(RarOutput)
         If ShowRarOut Then Log(RarOutputShort, False)
+        If RarOutput = "err" Then
+            MessageBox.Show("RAR process terminated, check log for details", "REMAC", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Return Task.FromResult(2)
+        End If
 
         For Each File As String In RarOutput.Split(Environment.NewLine)
             If File.ToLower.Contains("modinfo.ini") Then
@@ -124,12 +125,26 @@ Public Class ChangeModAuthors
     End Function
 
     Private Function StartRarProcessAndReturnOutput(ByVal FileName As String, ByVal ProcStartInfo As ProcessStartInfo) As String
+
         Dim RarProcess As New Process()
         Dim RarOutput As String
 
+
         RarProcess.StartInfo = ProcStartInfo
         RarProcess.Start()
-        RarProcess.WaitForExit()
+
+        If (Not RarProcess.WaitForExit(My.Settings.RarProcessTimeout)) Then
+            RarProcess.Kill()
+            Log(Environment.NewLine & "================================================================================", False)
+            Log("RAR.exe HAS EXCEEDED MAXIMUM WAIT TIME AND HAS BEEN KILLED!")
+            Log("You might have to process this archive manually!")
+            Log("RarProcStartInfo")
+            Log(String.Format("FileName: {0}", ProcStartInfo.FileName))
+            Log(String.Format("Arguments: {0}", ProcStartInfo.Arguments))
+            Log("================================================================================" & Environment.NewLine, False)
+            Return "err"
+        End If
+
 
         Using sr As StreamReader = RarProcess.StandardOutput
             RarOutput = sr.ReadToEnd

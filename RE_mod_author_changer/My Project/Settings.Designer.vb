@@ -101,6 +101,18 @@ Namespace My
                 Me("ShowConsoleOutput") = value
             End Set
         End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("0")>  _
+        Public Property RarProcessTimeout() As Integer
+            Get
+                Return CType(Me("RarProcessTimeout"),Integer)
+            End Get
+            Set
+                Me("RarProcessTimeout") = value
+            End Set
+        End Property
     End Class
 End Namespace
 

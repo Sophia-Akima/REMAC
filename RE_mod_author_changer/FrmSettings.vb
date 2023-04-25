@@ -2,11 +2,13 @@
     Private Sub FrmSettings_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         CbHidePopupWindow.Checked = My.Settings.HidePopupWindow
         CbShowConsoleOutput.Checked = My.Settings.ShowConsoleOutput
+        If My.Settings.RarProcessTimeout >= 1000 Then NumRarTimeout.Value = My.Settings.RarProcessTimeout
     End Sub
 
     Private Sub SaveSettings()
         My.Settings.HidePopupWindow = CbHidePopupWindow.Checked
         My.Settings.ShowConsoleOutput = CbShowConsoleOutput.Checked
+        My.Settings.RarProcessTimeout = NumRarTimeout.Value
     End Sub
     Private Sub BtnSave_Click(sender As Object, e As EventArgs) Handles BtnSave.Click
         SaveSettings()

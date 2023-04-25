@@ -131,4 +131,8 @@ Public Class FrmMain
     Private Sub btnSettings_Click(sender As Object, e As EventArgs) Handles BtnSettings.Click
         FrmSettings.ShowDialog()
     End Sub
+
+    Private Sub BtnCancelProcess_Click(sender As Object, e As EventArgs) Handles BtnCancelProcess.Click
+
+    End Sub
 End Class
