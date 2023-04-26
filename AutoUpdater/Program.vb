@@ -33,7 +33,7 @@ Module Program
             Using Archive As ZipArchive = ZipFile.Open("update.zip", ZipArchiveMode.Read)
                 For Each ZipEntry In Archive.Entries
 
-                    Dim ZipName As String = ZipEntry.FullName
+                    Dim ZipName As String = Path.GetFileName(ZipEntry.FullName)
                     Dim ZipPath As String = Path.GetFullPath(String.Format("{0}\{1}", MyPath, ZipEntry.FullName))
                     Dim ZipDir As String = Path.GetDirectoryName(ZipPath)
 
@@ -41,25 +41,31 @@ Module Program
                         Directory.CreateDirectory(ZipDir)
                     End If
 
-                    If Not ZipName.ToLower.Contains("autoupdater.exe") And Path.HasExtension(ZipName) Then
-                        Console.WriteLine("Extracting " & String.Format("{0}\{1}", MyPath, ZipPath))
+                    If ZipName.ToLower = "remac_auto_updater.exe" Then
+                        Console.WriteLine(String.Format("Extracting {0}{1}{0} to {0}{2}.tmp{0}", """", ZipName, ZipPath))
+                        ZipEntry.ExtractToFile(ZipPath & ".tmp", True)
+                    ElseIf ZipName.ToLower = "remac_auto_updater.dll" Then
+                        Console.WriteLine(String.Format("Extracting {0}{1}{0} to {0}{2}.tmp{0}", """", ZipName, ZipPath))
+                        ZipEntry.ExtractToFile(ZipPath & ".tmp", True)
+                    Else
+                        Console.WriteLine(String.Format("Extracting {0}{1}{0} to {0}{2}{0}", """", ZipName, ZipPath))
                         ZipEntry.ExtractToFile(ZipPath, True)
-                    ElseIf ZipName.ToLower.Contains("autoupdater.exe") And Path.HasExtension(ZipName) Then
-                        Dim TempExe As String = String.Format("{0}\{1}.tmp", MyPath, ZipPath)
-                        Console.WriteLine(String.Format("Extracting {0}\{1}.tmp", MyPath, ZipPath))
                     End If
                 Next
             End Using
 
-            File.Delete("update.zip")
+            Console.WriteLine("Program update is complete, starting REMAC")
 
-            Dim UpdateProcess As New Process()
-            Dim UpdateProcessInfo As New ProcessStartInfo("RE_mod_author_changer.exe")
-            UpdateProcess.StartInfo = UpdateProcessInfo
-            UpdateProcess.Start()
-            Environment.Exit(0)
-            Console.WriteLine("Everything is complete aside from starting a new process")
-            Console.ReadLine()
+            Try
+                File.Delete("update.zip")
+                Dim UpdateProcess As New Process()
+                Dim UpdateProcessInfo As New ProcessStartInfo("RE_mod_author_changer.exe")
+                UpdateProcess.StartInfo = UpdateProcessInfo
+                UpdateProcess.Start()
+                Environment.Exit(0)
+            Catch ex As Exception
+                Console.WriteLine(ex.Message)
+            End Try
 
         Catch ex As Exception
             Console.WriteLine(ex.Message)

@@ -5,7 +5,7 @@ VisualStudioVersion = 17.5.33530.505
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "RE_mod_author_changer", "RE_mod_author_changer\RE_mod_author_changer.vbproj", "{52B7FC3B-348E-4B02-B699-F8577472B46F}"
 EndProject
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "AutoUpdater", "AutoUpdater\AutoUpdater.vbproj", "{2405AF97-D7CE-4B63-9B05-03EE52506118}"
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "REMAC_auto_updater", "AutoUpdater\REMAC_auto_updater.vbproj", "{2405AF97-D7CE-4B63-9B05-03EE52506118}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

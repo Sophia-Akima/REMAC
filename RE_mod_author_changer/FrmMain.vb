@@ -23,6 +23,7 @@ Public Class FrmMain
         End If
 
         If File.Exists(ExePath & "\UPDATEFILE") Then
+            ChangeModAuthors.Log(String.Format("UPDATEFILE detected, attempting update cleanup"))
             Dim UpdateClean = Await FinalizeUpdate()
         End If
 
@@ -33,28 +34,41 @@ Public Class FrmMain
     End Sub
 
     Private Function FinalizeUpdate() As Task(Of Integer)
-        Dim UpdateEXE As String = ExePath & "\AutoUpdater.exe"
+        Dim UpdateEXE As String = ExePath & "\REMAC_auto_updater.exe"
+        Dim UpdateDLL As String = ExePath & "\REMAC_auto_updater.dll"
+        Dim UpdateEXETMP As String = ExePath & "\REMAC_auto_updater.exe.tmp"
+        Dim UpdateDLLTMP As String = ExePath & "\REMAC_auto_updater.dll.tmp"
+        Dim UpdateEXEOLD As String = ExePath & "\REMAC_auto_updater.exe.old"
+        Dim UpdateDLLOLD As String = ExePath & "\REMAC_auto_updater.dll.old"
+
+        While IsProcessRunning("REMAC_auto_updater")
+
+        End While
+
         Try
-            While ProgramIsRunning(UpdateEXE)
-                'this is probably a terrible thing to do
-                'but I really don't know or care
-            End While
+            ChangeModAuthors.Log("Moving old update executable")
+            If File.Exists(UpdateEXE) Then File.Move(UpdateEXE, UpdateEXEOLD)
+            ChangeModAuthors.Log("Replacing with a new executable")
+            If File.Exists(UpdateEXETMP) Then File.Move(UpdateEXETMP, UpdateEXE)
+            ChangeModAuthors.Log("Deleting old executable")
+            If File.Exists(UpdateEXEOLD) Then File.Delete(UpdateEXEOLD)
+
+            ChangeModAuthors.Log("Moving old update dll")
+            If File.Exists(UpdateDLL) Then File.Move(UpdateDLL, UpdateDLLOLD)
+            ChangeModAuthors.Log("Replacing with a new dll")
+            If File.Exists(UpdateDLLTMP) Then File.Move(UpdateDLLTMP, UpdateDLL)
+            ChangeModAuthors.Log("Deleting old dll")
+            If File.Exists(UpdateDLLOLD) Then File.Delete(UpdateDLLOLD)
+
+            ChangeModAuthors.Log("Deleting UPDATEFILE")
+            If File.Exists(ExePath & "\UPDATEFILE") Then File.Delete(ExePath & "\UPDATEFILE")
+
         Catch ex As Exception
             MessageBox.Show(String.Format("An error has occured cleaning the update files.{0}{0}You may have to run as administrator.{0}{0}Alternatively you may clean the files yourself, just delete UPDATEFILE and replace AutoUpdater.exe with AutoUpdater.exe.tmp{0}{0}{1}", Environment.NewLine, ex.Message), "REMAC - Error")
             Return Task.FromResult(1)
         End Try
 
-
-        Try
-            MoveFile(UpdateEXE, UpdateEXE & ".old")
-            MoveFile(UpdateEXE & ".tmp", UpdateEXE)
-            File.Delete(UpdateEXE & ".old")
-            File.Delete(ExePath & "\UPDATEFILE")
-            Return Task.FromResult(0)
-        Catch ex As Exception
-            MessageBox.Show(ex.Message)
-            Return Task.FromResult(1)
-        End Try
+        ChangeModAuthors.Log("Update cleanup complete")
         Return Task.FromResult(0)
     End Function
 
@@ -196,7 +210,7 @@ Public Class FrmMain
         If ReadyForUpdate Then
             Try
                 Dim UpdateProcess As New Process()
-                Dim UpdateProcessInfo As New ProcessStartInfo("AutoUpdater.exe", String.Format("{0} {1}", UpdateURL, ExePath))
+                Dim UpdateProcessInfo As New ProcessStartInfo("REMAC_auto_updater.exe", String.Format("{0} {1}", UpdateURL, ExePath))
                 If Not File.Exists(ExePath & "\UPDATEFILE") Then File.Create(ExePath & "\UPDATEFILE")
                 UpdateProcess.StartInfo = UpdateProcessInfo
                 UpdateProcess.Start()
@@ -206,36 +220,8 @@ Public Class FrmMain
         End If
     End Sub
 
-    Private Function ProgramIsRunning(FullPath As String) As Boolean
-        Dim FilePath As String = Path.GetDirectoryName(FullPath)
-        Dim FileName As String = Path.GetFileNameWithoutExtension(FullPath).ToLower()
-        Dim isRunning As Boolean = False
-
-        Dim pList As Process() = Process.GetProcessesByName(FileName)
-
-        For Each p As Process In pList
-            If p.MainModule.FileName.StartsWith(FilePath, StringComparison.InvariantCultureIgnoreCase) Then
-                isRunning = True
-                Exit For
-            End If
-        Next
-
-        Return isRunning
+    Function IsProcessRunning(processName As String) As Boolean
+        Dim processes() As Process = Process.GetProcessesByName(processName)
+        Return processes.Length > 0
     End Function
-
-    Private Async Sub MoveFile(sourceFile As String, destinationFile As String)
-        Try
-            Using sourceStream As FileStream = File.Open(sourceFile, FileMode.Open)
-                Using destinationStream As FileStream = File.Create(destinationFile)
-                    Await sourceStream.CopyToAsync(destinationStream)
-                    sourceStream.Close()
-                    File.Delete(sourceFile)
-                End Using
-            End Using
-        Catch ioex As IOException
-            MessageBox.Show("An IOException occured during move, " & ioex.Message)
-        Catch ex As Exception
-            MessageBox.Show("An Exception occured during move, " & ex.Message)
-        End Try
-    End Sub
 End Class
