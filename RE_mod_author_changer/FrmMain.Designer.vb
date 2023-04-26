@@ -41,7 +41,6 @@ Partial Class FrmMain
         ClearToolStripMenuItem1 = New ToolStripMenuItem()
         OfdRars = New OpenFileDialog()
         BtnSettings = New Button()
-        BtnCancelProcess = New Button()
         CmsLstArchives.SuspendLayout()
         CmsRtbOutput.SuspendLayout()
         SuspendLayout()
@@ -122,7 +121,7 @@ Partial Class FrmMain
         TxtAuthor.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         TxtAuthor.Location = New Point(12, 306)
         TxtAuthor.Name = "TxtAuthor"
-        TxtAuthor.Size = New Size(436, 23)
+        TxtAuthor.Size = New Size(517, 23)
         TxtAuthor.TabIndex = 0
         ' 
         ' Label2
@@ -184,22 +183,11 @@ Partial Class FrmMain
         BtnSettings.TabIndex = 8
         BtnSettings.UseVisualStyleBackColor = True
         ' 
-        ' BtnCancelProcess
-        ' 
-        BtnCancelProcess.Anchor = AnchorStyles.Bottom Or AnchorStyles.Right
-        BtnCancelProcess.Location = New Point(454, 306)
-        BtnCancelProcess.Name = "BtnCancelProcess"
-        BtnCancelProcess.Size = New Size(75, 23)
-        BtnCancelProcess.TabIndex = 9
-        BtnCancelProcess.Text = "CANCEL"
-        BtnCancelProcess.UseVisualStyleBackColor = True
-        ' 
         ' FrmMain
         ' 
         AutoScaleDimensions = New SizeF(7F, 15F)
         AutoScaleMode = AutoScaleMode.Font
         ClientSize = New Size(622, 571)
-        Controls.Add(BtnCancelProcess)
         Controls.Add(BtnSettings)
         Controls.Add(RtbOutput)
         Controls.Add(btnSetAuthorAll)
@@ -235,5 +223,4 @@ Partial Class FrmMain
     Friend WithEvents AddFilesToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents OfdRars As OpenFileDialog
     Friend WithEvents BtnSettings As Button
-    Friend WithEvents BtnCancelProcess As Button
 End Class

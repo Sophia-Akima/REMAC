@@ -1,22 +1,82 @@
 ﻿Imports System.Drawing.Text
 Imports System.IO
-Imports System.Text.RegularExpressions
-Imports System.Threading.Tasks
 Imports System.IO.Compression
+Imports System.Threading.Tasks
+Imports System.Net.Http
+
 Public Class FrmMain
     Private ExePath As String = Path.GetDirectoryName(Reflection.Assembly.GetExecutingAssembly().Location)
     Private WinrarPath As String
     Private RarPath As String
     Private IniPath As String
+    Private ReadyForUpdate As Boolean = False
+    Private UpdateURL As String
 
-    Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        Me.Text = String.Format("{0} {1}", Me.Text, FileVersionInfo.GetVersionInfo(Application.ExecutablePath).FileVersion)
+    Private Async Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Dim ProgramVersion As String = FileVersionInfo.GetVersionInfo(Application.ExecutablePath).FileVersion
+
+        Me.Text = String.Format("{0} {1}", Me.Text, ProgramVersion)
         TxtWinrar.Text = My.Settings.WinrarPath
         TxtAuthor.Text = My.Settings.AuthorName
         If (String.IsNullOrEmpty(TxtWinrar.Text)) Then
             btnSetAuthorAll.Enabled = False
         End If
+
+        If File.Exists(ExePath & "\UPDATEFILE") Then
+            Dim UpdateClean = Await FinalizeUpdate()
+        End If
+
+        If My.Settings.AutoUpdate Then
+            Dim UpdateResult = Await CheckForUpdate(ProgramVersion)
+        End If
+
     End Sub
+
+    Private Function FinalizeUpdate() As Task(Of Integer)
+        Dim UpdateEXE As String = ExePath & "\AutoUpdater.exe"
+        Try
+            While ProgramIsRunning(UpdateEXE)
+                'this is probably a terrible thing to do
+                'but I really don't know or care
+            End While
+        Catch ex As Exception
+            MessageBox.Show(String.Format("An error has occured cleaning the update files.{0}{0}You may have to run as administrator.{0}{0}Alternatively you may clean the files yourself, just delete UPDATEFILE and replace AutoUpdater.exe with AutoUpdater.exe.tmp{0}{0}{1}", Environment.NewLine, ex.Message), "REMAC - Error")
+            Return Task.FromResult(1)
+        End Try
+
+
+        Try
+            MoveFile(UpdateEXE, UpdateEXE & ".old")
+            MoveFile(UpdateEXE & ".tmp", UpdateEXE)
+            File.Delete(UpdateEXE & ".old")
+            File.Delete(ExePath & "\UPDATEFILE")
+            Return Task.FromResult(0)
+        Catch ex As Exception
+            MessageBox.Show(ex.Message)
+            Return Task.FromResult(1)
+        End Try
+        Return Task.FromResult(0)
+    End Function
+
+    Private Function CheckForUpdate(ByVal ProgramVersion As String) As Task(Of Integer)
+        Try
+            Dim OctoClient As New Octokit.GitHubClient(New Octokit.ProductHeaderValue("REMAC"))
+            Dim Releases As IReadOnlyList(Of Octokit.Release) = OctoClient.Repository.Release.GetAll("Sophia-Akima", "REMAC").Result
+            Dim NewestRelease As Octokit.Release = Releases(0)
+            UpdateURL = NewestRelease.Assets(0).BrowserDownloadUrl
+
+            If Not ProgramVersion.Equals(NewestRelease.TagName) Then
+                If MessageBox.Show(String.Format("Update available from version {0} to {1} from Github. Would you like to automatically update now?",
+                                              ProgramVersion, NewestRelease.TagName), "REMAC", MessageBoxButtons.OKCancel) = DialogResult.OK Then
+                    ReadyForUpdate = True
+                    Me.Close()
+                End If
+            End If
+        Catch ex As Exception
+
+        End Try
+        Return Task.FromResult(0)
+    End Function
 
     Private Sub BtnBrowseWinrar_Click(sender As Object, e As EventArgs) Handles BtnBrowseWinrar.Click
         If (FbdWinrar.ShowDialog() = DialogResult.OK) Then
@@ -132,7 +192,50 @@ Public Class FrmMain
         FrmSettings.ShowDialog()
     End Sub
 
-    Private Sub BtnCancelProcess_Click(sender As Object, e As EventArgs) Handles BtnCancelProcess.Click
+    Private Sub FrmMain_FormClosed(sender As Object, e As FormClosedEventArgs) Handles MyBase.FormClosed
+        If ReadyForUpdate Then
+            Try
+                Dim UpdateProcess As New Process()
+                Dim UpdateProcessInfo As New ProcessStartInfo("AutoUpdater.exe", String.Format("{0} {1}", UpdateURL, ExePath))
+                If Not File.Exists(ExePath & "\UPDATEFILE") Then File.Create(ExePath & "\UPDATEFILE")
+                UpdateProcess.StartInfo = UpdateProcessInfo
+                UpdateProcess.Start()
+            Catch ex As Exception
+                MessageBox.Show(ex.Message)
+            End Try
+        End If
+    End Sub
 
+    Private Function ProgramIsRunning(FullPath As String) As Boolean
+        Dim FilePath As String = Path.GetDirectoryName(FullPath)
+        Dim FileName As String = Path.GetFileNameWithoutExtension(FullPath).ToLower()
+        Dim isRunning As Boolean = False
+
+        Dim pList As Process() = Process.GetProcessesByName(FileName)
+
+        For Each p As Process In pList
+            If p.MainModule.FileName.StartsWith(FilePath, StringComparison.InvariantCultureIgnoreCase) Then
+                isRunning = True
+                Exit For
+            End If
+        Next
+
+        Return isRunning
+    End Function
+
+    Private Async Sub MoveFile(sourceFile As String, destinationFile As String)
+        Try
+            Using sourceStream As FileStream = File.Open(sourceFile, FileMode.Open)
+                Using destinationStream As FileStream = File.Create(destinationFile)
+                    Await sourceStream.CopyToAsync(destinationStream)
+                    sourceStream.Close()
+                    File.Delete(sourceFile)
+                End Using
+            End Using
+        Catch ioex As IOException
+            MessageBox.Show("An IOException occured during move, " & ioex.Message)
+        Catch ex As Exception
+            MessageBox.Show("An Exception occured during move, " & ex.Message)
+        End Try
     End Sub
 End Class

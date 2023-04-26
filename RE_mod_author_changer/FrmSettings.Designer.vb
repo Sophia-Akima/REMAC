@@ -29,6 +29,7 @@ Partial Class FrmSettings
         CbShowConsoleOutput = New CheckBox()
         NumRarTimeout = New NumericUpDown()
         Label1 = New Label()
+        CbCheckForUpdates = New CheckBox()
         CType(NumRarTimeout, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
         ' 
@@ -102,11 +103,22 @@ Partial Class FrmSettings
         Label1.TabIndex = 6
         Label1.Text = "rar.exe timeout in milliseconds"
         ' 
+        ' CbCheckForUpdates
+        ' 
+        CbCheckForUpdates.AutoSize = True
+        CbCheckForUpdates.Location = New Point(12, 127)
+        CbCheckForUpdates.Name = "CbCheckForUpdates"
+        CbCheckForUpdates.Size = New Size(197, 19)
+        CbCheckForUpdates.TabIndex = 7
+        CbCheckForUpdates.Text = "Automatically check for updates"
+        CbCheckForUpdates.UseVisualStyleBackColor = True
+        ' 
         ' FrmSettings
         ' 
         AutoScaleDimensions = New SizeF(7F, 15F)
         AutoScaleMode = AutoScaleMode.Font
         ClientSize = New Size(275, 238)
+        Controls.Add(CbCheckForUpdates)
         Controls.Add(Label1)
         Controls.Add(NumRarTimeout)
         Controls.Add(CbShowConsoleOutput)
@@ -131,4 +143,5 @@ Partial Class FrmSettings
     Friend WithEvents CbShowConsoleOutput As CheckBox
     Friend WithEvents NumRarTimeout As NumericUpDown
     Friend WithEvents Label1 As Label
+    Friend WithEvents CbCheckForUpdates As CheckBox
 End Class
