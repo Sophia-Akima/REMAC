@@ -30,6 +30,7 @@ Partial Class FrmSettings
         NumRarTimeout = New NumericUpDown()
         Label1 = New Label()
         CbCheckForUpdates = New CheckBox()
+        BtnCheckForUpdate = New Button()
         CType(NumRarTimeout, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
         ' 
@@ -106,18 +107,28 @@ Partial Class FrmSettings
         ' CbCheckForUpdates
         ' 
         CbCheckForUpdates.AutoSize = True
-        CbCheckForUpdates.Location = New Point(12, 127)
+        CbCheckForUpdates.Location = New Point(12, 91)
         CbCheckForUpdates.Name = "CbCheckForUpdates"
         CbCheckForUpdates.Size = New Size(197, 19)
         CbCheckForUpdates.TabIndex = 7
         CbCheckForUpdates.Text = "Automatically check for updates"
         CbCheckForUpdates.UseVisualStyleBackColor = True
         ' 
+        ' BtnCheckForUpdate
+        ' 
+        BtnCheckForUpdate.Location = New Point(12, 123)
+        BtnCheckForUpdate.Name = "BtnCheckForUpdate"
+        BtnCheckForUpdate.Size = New Size(251, 23)
+        BtnCheckForUpdate.TabIndex = 8
+        BtnCheckForUpdate.Text = "Check For Update"
+        BtnCheckForUpdate.UseVisualStyleBackColor = True
+        ' 
         ' FrmSettings
         ' 
         AutoScaleDimensions = New SizeF(7F, 15F)
         AutoScaleMode = AutoScaleMode.Font
         ClientSize = New Size(275, 238)
+        Controls.Add(BtnCheckForUpdate)
         Controls.Add(CbCheckForUpdates)
         Controls.Add(Label1)
         Controls.Add(NumRarTimeout)
@@ -144,4 +155,5 @@ Partial Class FrmSettings
     Friend WithEvents NumRarTimeout As NumericUpDown
     Friend WithEvents Label1 As Label
     Friend WithEvents CbCheckForUpdates As CheckBox
+    Friend WithEvents BtnCheckForUpdate As Button
 End Class

@@ -3,14 +3,18 @@ Imports System.IO
 Imports System.IO.Compression
 Imports System.Threading.Tasks
 Imports System.Net.Http
+Imports SharpCompress.Archives
+Imports SharpCompress.Archives.Rar
+Imports SharpCompress
+Imports SharpCompress.Common
 
 Public Class FrmMain
     Private ExePath As String = Path.GetDirectoryName(Reflection.Assembly.GetExecutingAssembly().Location)
     Private WinrarPath As String
     Private RarPath As String
     Private IniPath As String
-    Private ReadyForUpdate As Boolean = False
-    Private UpdateURL As String
+    Public ReadyForUpdate As Boolean = False
+    Public UpdateURL As String
 
     Private Async Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Dim ProgramVersion As String = FileVersionInfo.GetVersionInfo(Application.ExecutablePath).FileVersion
@@ -23,74 +27,22 @@ Public Class FrmMain
         End If
 
         If File.Exists(ExePath & "\UPDATEFILE") Then
-            ChangeModAuthors.Log(String.Format("UPDATEFILE detected, attempting update cleanup"))
-            Dim UpdateClean = Await FinalizeUpdate()
+            Logger.Log(Me, String.Format("UPDATEFILE detected, attempting update cleanup"))
+            Dim UpdateClean = Await Task.Run(Function() UpdateChecker.FinalizeUpdate(Me))
         End If
 
         If My.Settings.AutoUpdate Then
-            Dim UpdateResult = Await CheckForUpdate(ProgramVersion)
+            Dim UpdateResult = Await Task.Run(Function() UpdateChecker.CheckForUpdate(ProgramVersion))
+            If UpdateChecker.IsValidURL(UpdateResult) Then
+                UpdateURL = UpdateResult
+                ReadyForUpdate = True
+                Me.Close()
+            Else
+                Logger.Log(Me, "No update available (or maybe just a problem with my code)")
+            End If
         End If
 
     End Sub
-
-    Private Function FinalizeUpdate() As Task(Of Integer)
-        Dim UpdateEXE As String = ExePath & "\REMAC_auto_updater.exe"
-        Dim UpdateDLL As String = ExePath & "\REMAC_auto_updater.dll"
-        Dim UpdateEXETMP As String = ExePath & "\REMAC_auto_updater.exe.tmp"
-        Dim UpdateDLLTMP As String = ExePath & "\REMAC_auto_updater.dll.tmp"
-        Dim UpdateEXEOLD As String = ExePath & "\REMAC_auto_updater.exe.old"
-        Dim UpdateDLLOLD As String = ExePath & "\REMAC_auto_updater.dll.old"
-
-        While IsProcessRunning("REMAC_auto_updater")
-
-        End While
-
-        Try
-            ChangeModAuthors.Log("Moving old update executable")
-            If File.Exists(UpdateEXE) Then File.Move(UpdateEXE, UpdateEXEOLD)
-            ChangeModAuthors.Log("Replacing with a new executable")
-            If File.Exists(UpdateEXETMP) Then File.Move(UpdateEXETMP, UpdateEXE)
-            ChangeModAuthors.Log("Deleting old executable")
-            If File.Exists(UpdateEXEOLD) Then File.Delete(UpdateEXEOLD)
-
-            ChangeModAuthors.Log("Moving old update dll")
-            If File.Exists(UpdateDLL) Then File.Move(UpdateDLL, UpdateDLLOLD)
-            ChangeModAuthors.Log("Replacing with a new dll")
-            If File.Exists(UpdateDLLTMP) Then File.Move(UpdateDLLTMP, UpdateDLL)
-            ChangeModAuthors.Log("Deleting old dll")
-            If File.Exists(UpdateDLLOLD) Then File.Delete(UpdateDLLOLD)
-
-            ChangeModAuthors.Log("Deleting UPDATEFILE")
-            If File.Exists(ExePath & "\UPDATEFILE") Then File.Delete(ExePath & "\UPDATEFILE")
-
-        Catch ex As Exception
-            MessageBox.Show(String.Format("An error has occured cleaning the update files.{0}{0}You may have to run as administrator.{0}{0}Alternatively you may clean the files yourself, just delete UPDATEFILE and replace AutoUpdater.exe with AutoUpdater.exe.tmp{0}{0}{1}", Environment.NewLine, ex.Message), "REMAC - Error")
-            Return Task.FromResult(1)
-        End Try
-
-        ChangeModAuthors.Log("Update cleanup complete")
-        Return Task.FromResult(0)
-    End Function
-
-    Private Function CheckForUpdate(ByVal ProgramVersion As String) As Task(Of Integer)
-        Try
-            Dim OctoClient As New Octokit.GitHubClient(New Octokit.ProductHeaderValue("REMAC"))
-            Dim Releases As IReadOnlyList(Of Octokit.Release) = OctoClient.Repository.Release.GetAll("Sophia-Akima", "REMAC").Result
-            Dim NewestRelease As Octokit.Release = Releases(0)
-            UpdateURL = NewestRelease.Assets(0).BrowserDownloadUrl
-
-            If Not ProgramVersion.Equals(NewestRelease.TagName) Then
-                If MessageBox.Show(String.Format("Update available from version {0} to {1} from Github. Would you like to automatically update now?",
-                                              ProgramVersion, NewestRelease.TagName), "REMAC", MessageBoxButtons.OKCancel) = DialogResult.OK Then
-                    ReadyForUpdate = True
-                    Me.Close()
-                End If
-            End If
-        Catch ex As Exception
-
-        End Try
-        Return Task.FromResult(0)
-    End Function
 
     Private Sub BtnBrowseWinrar_Click(sender As Object, e As EventArgs) Handles BtnBrowseWinrar.Click
         If (FbdWinrar.ShowDialog() = DialogResult.OK) Then
@@ -147,9 +99,9 @@ Public Class FrmMain
         For Each item In LstArchives.Items
             Select Case Path.GetExtension(item)
                 Case ".rar"
-                    Dim result = Await ChangeModAuthors.Rar(item)
+                    Dim result = Await Task.Run(Function() ChangeModAuthors.Rarr(Me, item, TxtAuthor.Text))
                 Case ".zip"
-                    Dim result = Await ChangeModAuthors.Zip(item)
+                    Dim result = Await Task.Run(Function() ChangeModAuthors.Zip(Me, item, Name))
                 Case Else
                     MessageBox.Show("unknown extension type")
             End Select
@@ -172,7 +124,7 @@ Public Class FrmMain
         RarPath = WinrarPath & "\rar.exe"
         If (Not File.Exists(RarPath)) Then
             btnSetAuthorAll.Enabled = False
-            ChangeModAuthors.Log("ERROR: Rar.exe not found at " & RarPath)
+            Logger.Log(Me, "ERROR: Rar.exe not found at " & RarPath)
         Else
             btnSetAuthorAll.Enabled = True
         End If
@@ -190,7 +142,7 @@ Public Class FrmMain
                 Next
             End If
         Catch ex As Exception
-            ChangeModAuthors.Log(ex.Message)
+            Logger.Log(Me, ex.Message)
         End Try
     End Sub
 
@@ -219,9 +171,30 @@ Public Class FrmMain
             End Try
         End If
     End Sub
+    Private Async Sub CheckAllArchivesForNameToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles CheckAllArchivesForNameToolStripMenuItem.Click
+        For Each archivePath In LstArchives.Items
+            Select Case Path.GetExtension(archivePath)
+                Case ".rar"
+                    Dim rarPeek As New ArchivePeek(archivePath)
+                    Dim result = Await Task.Run(Function() rarPeek.ListAuthorsRar(Me, TxtAuthor.Text, False))
+                Case ".zip"
+                    Dim ArchPeek As New ArchivePeek(archivePath)
+                    Dim result = Await Task.Run(Function() ArchPeek.ListAuthorsZip(Me, TxtAuthor.Text, False))
+            End Select
+        Next
+    End Sub
 
-    Function IsProcessRunning(processName As String) As Boolean
-        Dim processes() As Process = Process.GetProcessesByName(processName)
-        Return processes.Length > 0
-    End Function
+    Private Async Sub ListAuthorsInAllArchivesToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ListAuthorsInAllArchivesToolStripMenuItem.Click
+        For Each archivePath In LstArchives.Items
+            Select Case Path.GetExtension(archivePath)
+                Case ".rar"
+                    Dim rarPeek As New ArchivePeek(archivePath)
+                    Dim result = Await Task.Run(Function() rarPeek.ListAuthorsRar(Me, TxtAuthor.Text, True))
+                Case ".zip"
+                    Dim ArchPeek As New ArchivePeek(archivePath)
+                    Dim result = Await Task.Run(Function() ArchPeek.ListAuthorsZip(Me, TxtAuthor.Text, True))
+            End Select
+        Next
+    End Sub
+
 End Class

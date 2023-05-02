@@ -24,4 +24,16 @@
     Private Sub BtnCloseWithoutSave_Click(sender As Object, e As EventArgs) Handles BtnCloseWithoutSave.Click
         Me.Close()
     End Sub
+
+    Private Async Sub BtnCheckForUpdate_Click(sender As Object, e As EventArgs) Handles BtnCheckForUpdate.Click
+        Dim ProgramVersion As String = FileVersionInfo.GetVersionInfo(Application.ExecutablePath).FileVersion
+        Dim UpdateResult = Await Task.Run(Function() UpdateChecker.CheckForUpdate(ProgramVersion))
+        If UpdateChecker.IsValidURL(UpdateResult) Then
+            FrmMain.UpdateURL = UpdateResult
+            FrmMain.ReadyForUpdate = True
+            FrmMain.Close()
+        Else
+            MessageBox.Show("Update not available")
+        End If
+    End Sub
 End Class

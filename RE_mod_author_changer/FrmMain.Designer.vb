@@ -31,6 +31,8 @@ Partial Class FrmMain
         LstArchives = New ListBox()
         CmsLstArchives = New ContextMenuStrip(components)
         AddFilesToolStripMenuItem = New ToolStripMenuItem()
+        CheckAllArchivesForNameToolStripMenuItem = New ToolStripMenuItem()
+        ListAuthorsInAllArchivesToolStripMenuItem = New ToolStripMenuItem()
         ClearToolStripMenuItem = New ToolStripMenuItem()
         ClearAllToolStripMenuItem = New ToolStripMenuItem()
         TxtAuthor = New TextBox()
@@ -94,26 +96,38 @@ Partial Class FrmMain
         ' 
         ' CmsLstArchives
         ' 
-        CmsLstArchives.Items.AddRange(New ToolStripItem() {AddFilesToolStripMenuItem, ClearToolStripMenuItem, ClearAllToolStripMenuItem})
+        CmsLstArchives.Items.AddRange(New ToolStripItem() {AddFilesToolStripMenuItem, CheckAllArchivesForNameToolStripMenuItem, ListAuthorsInAllArchivesToolStripMenuItem, ClearToolStripMenuItem, ClearAllToolStripMenuItem})
         CmsLstArchives.Name = "CmsLstArchives"
-        CmsLstArchives.Size = New Size(149, 70)
+        CmsLstArchives.Size = New Size(192, 114)
         ' 
         ' AddFilesToolStripMenuItem
         ' 
         AddFilesToolStripMenuItem.Name = "AddFilesToolStripMenuItem"
-        AddFilesToolStripMenuItem.Size = New Size(148, 22)
+        AddFilesToolStripMenuItem.Size = New Size(191, 22)
         AddFilesToolStripMenuItem.Text = "Add Files"
+        ' 
+        ' CheckAllArchivesForNameToolStripMenuItem
+        ' 
+        CheckAllArchivesForNameToolStripMenuItem.Name = "CheckAllArchivesForNameToolStripMenuItem"
+        CheckAllArchivesForNameToolStripMenuItem.Size = New Size(191, 22)
+        CheckAllArchivesForNameToolStripMenuItem.Text = "List Matching Authors"
+        ' 
+        ' ListAuthorsInAllArchivesToolStripMenuItem
+        ' 
+        ListAuthorsInAllArchivesToolStripMenuItem.Name = "ListAuthorsInAllArchivesToolStripMenuItem"
+        ListAuthorsInAllArchivesToolStripMenuItem.Size = New Size(191, 22)
+        ListAuthorsInAllArchivesToolStripMenuItem.Text = "List All Authors"
         ' 
         ' ClearToolStripMenuItem
         ' 
         ClearToolStripMenuItem.Name = "ClearToolStripMenuItem"
-        ClearToolStripMenuItem.Size = New Size(148, 22)
+        ClearToolStripMenuItem.Size = New Size(191, 22)
         ClearToolStripMenuItem.Text = "Clear Selected"
         ' 
         ' ClearAllToolStripMenuItem
         ' 
         ClearAllToolStripMenuItem.Name = "ClearAllToolStripMenuItem"
-        ClearAllToolStripMenuItem.Size = New Size(148, 22)
+        ClearAllToolStripMenuItem.Size = New Size(191, 22)
         ClearAllToolStripMenuItem.Text = "Clear All"
         ' 
         ' TxtAuthor
@@ -223,4 +237,6 @@ Partial Class FrmMain
     Friend WithEvents AddFilesToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents OfdRars As OpenFileDialog
     Friend WithEvents BtnSettings As Button
+    Friend WithEvents CheckAllArchivesForNameToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents ListAuthorsInAllArchivesToolStripMenuItem As ToolStripMenuItem
 End Class
