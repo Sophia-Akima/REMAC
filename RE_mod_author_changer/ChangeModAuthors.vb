@@ -62,13 +62,14 @@ Public Class ChangeModAuthors
         Return Task.FromResult(0)
     End Function
 
-    Public Function Rarr(FormMain As FrmMain, ByVal _rarArchive As String, ByVal Name As String)
-        Logger.Log(FormMain, String.Format("{0}========== START FILE {1}{2}{1} ==========", Environment.NewLine, """", _rarArchive), False)
-
+    Public Function Rar(FormMain As FrmMain, ByVal _rarArchive As String, ByVal Name As String)
+        Logger.Log(FormMain, String.Format("{0}========== START ARCHIVE {1}{2}{1} ==========", Environment.NewLine, """", Path.GetFileName(_rarArchive)), False)
+        Dim FileList As New List(Of String)
         Using archive = RarArchive.Open(_rarArchive)
             For Each file In archive.Entries
                 If Not file.IsDirectory And file.Key.ToLower.Contains("modinfo.ini") Then
                     Logger.Log(FormMain, String.Format("Extracting {0}{1}{0}", """", file.Key))
+                    FileList.Add(file.Key)
 
                     Dim destination = Path.Combine(MyPath, file.Key)
                     If Not Directory.Exists(Path.GetDirectoryName(destination)) Then Directory.CreateDirectory(Path.GetDirectoryName(destination))
@@ -78,76 +79,48 @@ Public Class ChangeModAuthors
                             stream.CopyTo(outputStream)
                         End Using
                     End Using
-
-                    Logger.Log(FormMain, String.Format("Changing author to {0}{3}{0} for {0}{1}\{2}{0}", """", MyPath, file, Name))
                     Dim Ini As New IniFileParser(destination)
                     Ini.SetValue("author", Name)
                 End If
             Next
         End Using
-    End Function
-    Public Function Rar(FormMain As FrmMain, ByVal RarArchive As String, ByVal Name As String) As Integer
-        Dim ShowRarOut As Boolean = My.Settings.ShowConsoleOutput
-        Dim RarOutput As String
-        Dim RarOutputShort As String
-        Dim RarProcess As New Process()
-        Dim RarProcessInfo As New ProcessStartInfo(RarExe, String.Format("lb {0}{1}{0}", """", RarArchive)) With {
-            .UseShellExecute = False,                                   ' ^This initial argument is simply to LOOK
-            .RedirectStandardOutput = True,                             ' at the files BASIC information (just the location)
-            .CreateNoWindow = My.Settings.HidePopupWindow}
-        'This will return the filenames
-        RarOutput = StartRarProcessAndReturnOutput(FormMain, RarArchive, RarProcessInfo)
-        RarOutputShort = FormatRarOutput(RarOutput)
-        If ShowRarOut Then Logger.Log(FormMain, RarOutputShort, False)
-        If RarOutput = "err" Then
-            MessageBox.Show("RAR process terminated, check Logger.Log for details", "REMAC", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-            Return 2
-        End If
 
-        For Each File As String In RarOutput.Split(Environment.NewLine)
-            If File.ToLower.Contains("modinfo.ini") Then
-                Logger.Log(FormMain, String.Format("{0}========== START FILE {1}{2}{1} ==========", Environment.NewLine, """", File), False)
-                Logger.Log(FormMain, String.Format("Extracting {0}{1}{0}", """", File))
+        For Each file In FileList
+            Logger.Log(FormMain, String.Format("Changing author to {0}{3}{0} for {0}{2}{0}", """", MyPath, file, Name))
+            Dim destination = Path.Combine(MyPath, file)
+            Dim ShowRarOut As Boolean = My.Settings.ShowConsoleOutput
+            Dim RarOutput As String
+            Dim RarOutputShort As String
+            Dim RarProcess As New Process()
+            Dim RarProcessInfo As New ProcessStartInfo(RarExe, String.Format("m -r {0}{1}{0} {0}{2}{0}", """", _rarArchive, file)) With {
+                .UseShellExecute = False,
+                .RedirectStandardOutput = True,
+                .CreateNoWindow = My.Settings.HidePopupWindow}
+            Logger.Log(FormMain, String.Format("Moving {0}{1}{0} back to {0}{2}{0}", """", file, Path.GetFileName(_rarArchive)))
+            RarOutput = StartRarProcessAndReturnOutput(FormMain, _rarArchive, RarProcessInfo)
+            RarOutputShort = FormatRarOutput(RarOutput)
 
-                RarProcessInfo.Arguments = String.Format("x -o+ {0}{1}{0} {0}{2}{0} {0}{3}{0}", """", RarArchive, File, MyPath)
-                RarOutput = StartRarProcessAndReturnOutput(FormMain, RarArchive, RarProcessInfo)
-                RarOutputShort = FormatRarOutput(RarOutput)
-                If ShowRarOut Then Logger.Log(FormMain, RarOutputShort, False)
+            If ShowRarOut Then Logger.Log(FormMain, RarOutputShort, False)
 
-                If RarOutput.Contains("OK") Or RarOutput.Contains("Done") Or RarOutput.Contains("100%") Then
-                    Logger.Log(FormMain, "rar.exe returned OK, Done, or 100%")
-                Else Return 1
-                End If
-
-                Logger.Log(FormMain, String.Format("Changing author to {0}{3}{0} for {0}{1}\{2}{0}", """", MyPath, File, Name))
-                Dim Ini As New IniFileParser(File)
-                Ini.SetValue("author", Name)
-
-                Logger.Log(FormMain, String.Format("Moving {0}{1}{0} back to {0}{2}{0}", """", File, Path.GetFileName(RarArchive)))
-                RarProcessInfo.Arguments = String.Format("m -r {0}{1}{0} {0}{2}{0}", """", RarArchive, File)
-                RarOutput = StartRarProcessAndReturnOutput(FormMain, RarArchive, RarProcessInfo)
-                RarOutputShort = FormatRarOutput(RarOutput)
-                If ShowRarOut Then Logger.Log(FormMain, RarOutputShort, False)
-
-                If RarOutput.Contains("OK") Or RarOutput.Contains("Done") Or RarOutput.Contains("100%") Then
-                    Logger.Log(FormMain, "rar.exe returned OK, Done, or 100%")
-                Else Return 1
-                End If
-
-                If Not String.IsNullOrWhiteSpace(Path.GetDirectoryName(File)) Then
-                    Dim DirToDelete = Path.GetDirectoryName(File).Split("\")(0)
-                    Try
-                        Logger.Log(FormMain, String.Format("Cleaning up directory {0}{1}{0}", """", DirToDelete))
-                        Directory.Delete(DirToDelete, True)
-                    Catch ex As Exception
-                        MessageBox.Show(ex.Message)
-                    End Try
-                End If
-                Logger.Log(FormMain, String.Format("========== DONE FILE {1}{2}{1} ==========", Environment.NewLine, """", File), False)
+            If RarOutput.Contains("OK") Or RarOutput.Contains("Done") Or RarOutput.Contains("100%") Then
+                Logger.Log(FormMain, "rar.exe returned OK, Done, or 100%")
+            Else
+                Logger.Log(FormMain, "rar.exe did not return ok, likely an error. turn on Show all console output or uncheck hide CMD to help diagnose issue")
+                Return 0
             End If
+
+            If Not String.IsNullOrWhiteSpace(Path.GetDirectoryName(file)) Then
+                Dim DirToDelete = Path.GetDirectoryName(file).Split("\")(0)
+                Try
+                    Logger.Log(FormMain, String.Format("Cleaning up directory {0}{1}{0}", """", DirToDelete))
+                    Directory.Delete(DirToDelete, True)
+                Catch ex As Exception
+                    MessageBox.Show(ex.Message)
+                End Try
+            End If
+            Logger.Log(FormMain, String.Format("========== DONE FILE {1}{2}{1} ==========", Environment.NewLine, """", file), False)
         Next
 
-        Return 0
     End Function
 
     Private Function StartRarProcessAndReturnOutput(FormMain As FrmMain, ByVal FileName As String, ByVal ProcStartInfo As ProcessStartInfo) As String

@@ -99,9 +99,9 @@ Public Class FrmMain
         For Each item In LstArchives.Items
             Select Case Path.GetExtension(item)
                 Case ".rar"
-                    Dim result = Await Task.Run(Function() ChangeModAuthors.Rarr(Me, item, TxtAuthor.Text))
+                    Await Task.Run(Function() ChangeModAuthors.Rar(Me, item, TxtAuthor.Text))
                 Case ".zip"
-                    Dim result = Await Task.Run(Function() ChangeModAuthors.Zip(Me, item, Name))
+                    Dim result = Await Task.Run(Function() ChangeModAuthors.Zip(Me, item, TxtAuthor.Text))
                 Case Else
                     MessageBox.Show("unknown extension type")
             End Select

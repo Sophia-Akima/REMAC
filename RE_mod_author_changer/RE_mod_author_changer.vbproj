@@ -6,7 +6,7 @@
     <StartupObject>Sub Main</StartupObject>
     <UseWindowsForms>true</UseWindowsForms>
     <MyType>WindowsForms</MyType>
-    <FileVersion>0.3.0</FileVersion>
+    <FileVersion>0.4.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
