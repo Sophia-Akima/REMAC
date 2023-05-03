@@ -19,6 +19,11 @@ Public Class FrmMain
     Private Async Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Dim ProgramVersion As String = FileVersionInfo.GetVersionInfo(Application.ExecutablePath).FileVersion
 
+        If My.Settings.RarProcessTimeout < 1000 Then
+            My.Settings.RarProcessTimeout = 1000
+            My.Settings.Save()
+        End If
+
         Me.Text = String.Format("{0} {1}", Me.Text, ProgramVersion)
         TxtWinrar.Text = My.Settings.WinrarPath
         TxtAuthor.Text = My.Settings.AuthorName

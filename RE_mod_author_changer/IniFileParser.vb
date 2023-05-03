@@ -14,7 +14,7 @@ Public Class IniFileParser
         If _dictionary.ContainsKey(key) Then
             Return _dictionary(key)
         Else
-            Return Nothing
+            Return ""
         End If
     End Function
 

@@ -26,7 +26,7 @@ Public Class ArchivePeek
                     End Using
 
                     Dim Ini As New IniFileParser(destination)
-                    Dim Author As String = Ini.GetValue("author").ToLower
+                    Dim Author = Ini.GetValue("author").ToLower
                     If String.IsNullOrEmpty(Author) Then Author = "NULL"
                     NameToCheck = NameToCheck.ToLower
                     File.Delete(destination)
